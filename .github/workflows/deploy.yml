@@ -4,11 +4,26 @@ on:
   push:
     tags: '*'
 
-jobs:
+env:
+  YC_CREDS: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+  YC_REG: ${{ secrets.REGISTRY_ID }}
+  APP_NAME: "sfapp"
 
-  build:
+jobs:
+  build-and-publish-image:
+    name: Build And Publish Image
     runs-on: self-hosted
     steps:
-    - uses: actions/checkout@v4
+    - name: Get last version of repository
+      uses: actions/checkout@v4
+
+    - name: Login to Yandex Cloud Container Registry
+      uses: yc-actions/yc-cr-login@v2
+      with:
+        yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag sfapp:$(date +%s)
+      run: docker build . --file Dockerfile --tag cr.yandex/${YC_REG}/${APP_NAME}:${github.ref_name}
+
+    - name: Push docker image
+      run: docker push cr.yandex/${YC_REG}/${APP_NAME}:${github.ref_name}
