@@ -18,10 +18,6 @@ jobs:
     - name: Get last version of repository
       uses: actions/checkout@v4
 
-    - name: Decode yc creds
-      run: |
-        export YC_CREDS = $(echo ${YC_CREDS} | base64 -d)
-
     - name: Login to Yandex Cloud Container Registry
       uses: yc-actions/yc-cr-login@v2
       with:
