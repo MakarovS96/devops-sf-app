@@ -20,8 +20,7 @@ jobs:
 
     - name: Decode yc creds
       run: |
-        echo ${YC_CREDS} | base64 -d > yc.json
-        export YC_CREDS = $(cat yc.json)
+        echo ${YC_CREDS} | base64 -d >> $YC_CREDS
 
     - name: Login to Yandex Cloud Container Registry
       uses: yc-actions/yc-cr-login@v2
