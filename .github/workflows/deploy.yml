@@ -5,7 +5,7 @@ on:
     tags: '*'
 
 env:
-  YC_CREDS: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+  YC_CREDS: ""
   YC_REG: ${{ secrets.REGISTRY_ID }}
   APP_NAME: "sfapp"
 
@@ -17,13 +17,16 @@ jobs:
     - name: Get last version of repository
       uses: actions/checkout@v4
 
+    - name: Decode yc creds
+      run: export YC_CREDS=${echo ${{secrets.YC_SA_JSON_CREDENTIALS}} | base64 -d}
+
     - name: Login to Yandex Cloud Container Registry
       uses: yc-actions/yc-cr-login@v2
       with:
-        yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+        yc-sa-json-credentials: ${YC_CREDS}
 
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag cr.yandex/${YC_REG}/${APP_NAME}:${github.ref_name}
+      run: docker build . --file Dockerfile --tag cr.yandex/${YC_REG}/${APP_NAME}:${{github.ref_name}}
 
     - name: Push docker image
-      run: docker push cr.yandex/${YC_REG}/${APP_NAME}:${github.ref_name}
+      run: docker push cr.yandex/${YC_REG}/${APP_NAME}:${{github.ref_name}}
