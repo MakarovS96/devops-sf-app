@@ -5,7 +5,7 @@ on:
     tags: '*'
 
 env:
-  YC_CREDS: ""
+  YC_CREDS: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
   YC_REG: ${{ secrets.REGISTRY_ID }}
   APP_NAME: "sfapp"
 
@@ -18,7 +18,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Decode yc creds
-      run: export YC_CREDS=${echo ${{secrets.YC_SA_JSON_CREDENTIALS}} | base64 -d}
+      run: export YC_CREDS=$(echo $YC_CREDS | base64 -d)
 
     - name: Login to Yandex Cloud Container Registry
       uses: yc-actions/yc-cr-login@v2
