@@ -3,6 +3,7 @@ name: Deploy app to k8s
 on:
   push:
     tags: '*'
+    branches: master
 
 env:
   YC_CREDS: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
@@ -18,7 +19,9 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Decode yc creds
-      run: export YC_CREDS=$(echo $YC_CREDS | base64 -d)
+      run: |
+        echo ${YC_CREDS} | base64 -d > yc.json
+        export YC_CREDS = $(cat yc.json)
 
     - name: Login to Yandex Cloud Container Registry
       uses: yc-actions/yc-cr-login@v2
