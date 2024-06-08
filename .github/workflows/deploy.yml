@@ -52,7 +52,7 @@ jobs:
       - name: Set kubeconfig file
         run: |
           echo "${{ secrets.KUBECONFIG }}" >> kubeconf
-          chmod 400 kubeconf
+          chmod 600 kubeconf
 
       - name: Set env specific variables
         run: |
