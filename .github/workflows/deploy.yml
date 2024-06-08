@@ -40,7 +40,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set kubeconfig file
-        run: echo "${{ secrets.KUBECONFIG }}" >> kubeconf
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" >> kubeconf
+          chmod 400 kubeconf
 
       - name: Set env specific variables
         run: |
