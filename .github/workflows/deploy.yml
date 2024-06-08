@@ -3,7 +3,6 @@ name: Deploy app to k8s
 on:
   push:
     tags: '*'
-    branches: master
 
 env:
   YC_CREDS: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
@@ -34,11 +33,11 @@ jobs:
     - name: Set docker envs
       run: echo "SFAPP_IMAGE=cr.yandex/$YC_REG/$APP_NAME:${{github.ref_name}}" >> $GITHUB_ENV
 
-    # - name: Build the Docker image
-    #   run: docker build . --file Dockerfile --tag $SFAPP_IMAGE
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag $SFAPP_IMAGE
 
-    # - name: Push docker image
-    #   run: docker push $SFAPP_IMAGE
+    - name: Push docker image
+      run: docker push $SFAPP_IMAGE
 
   deploy-to-k8s:
     needs:
@@ -77,15 +76,15 @@ jobs:
           kubectl config set-context --current --namespace=$K8S_NAMESPACE
 
           echo -e "$YELLOW Installing IRIS application $RESET"
-          helm upgrade $HELM_RELEASE_NAME --dry-run --install sfapp_chart/sfapp-helm \
-            --version $HELM_CHART_VERSION                                     \
-            --values $HELM_VALUES                                             \
-            --set dockerSecret.name=$DOCKER_SECRET_NAME                       \
-            --set dockerSecret.secret=$DOCKER_SECRET                          \
-            --set postgres.config.dbName=$PG_DB_NAME                          \
-            --set postgres.config.dbUser=$PG_USER_NAME                        \
-            --set postgres.config.dbPass=$PG_PASSWORD                         \
-            --set sfapp.deployment.image=$SFAPP_IMAGE                         \
-            --create-namespace                                                \
-            --wait                                                            \
+          helm upgrade $HELM_RELEASE_NAME --install sfapp_chart/sfapp-helm \
+            --version $HELM_CHART_VERSION                                  \
+            --values $HELM_VALUES                                          \
+            --set dockerSecret.name=$DOCKER_SECRET_NAME                    \
+            --set dockerSecret.secret=$DOCKER_SECRET                       \
+            --set postgres.config.dbName=$PG_DB_NAME                       \
+            --set postgres.config.dbUser=$PG_USER_NAME                     \
+            --set postgres.config.dbPass=$PG_PASSWORD                      \
+            --set sfapp.deployment.image=$SFAPP_IMAGE                      \
+            --create-namespace                                             \
+            --wait                                                         \
             --atomic
