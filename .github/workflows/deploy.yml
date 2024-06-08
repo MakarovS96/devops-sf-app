@@ -9,6 +9,14 @@ env:
   YC_CREDS: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
   YC_REG: ${{ secrets.REGISTRY_ID }}
   APP_NAME: "sfapp"
+  K8SNAMESPACE: "sfdevops"
+
+  YELLOW: '\033[0;33m'
+  RESET:  '\033[0m'
+
+  HELM_CHART_VERSION: 0.1.0
+  HELM_RELEASE_NAME: sf-release
+  HELM_VALUES: sfapp.yml
 
 jobs:
   build-and-publish-image:
@@ -33,6 +41,8 @@ jobs:
     #   run: docker push $SFAPP_IMAGE
 
   deploy-to-k8s:
+    needs:
+      - build-and-publish-image
     name: Deploy to k8s
     runs-on: self-hosted
     steps:
@@ -52,8 +62,30 @@ jobs:
           echo "DOCKER_SECRET_NAME=${{ secrets.DOCKER_SECRET_NAME }}" >> $GITHUB_ENV
           echo "DOCKER_SECRET=${{ secrets.DOCKER_SECRET }}" >> $GITHUB_ENV
           echo "KUBECONFIG=$(pwd)/kubeconf" >> $GITHUB_ENV
+          echo "SFAPP_IMAGE=cr.yandex/$YC_REG/$APP_NAME:${{github.ref_name}}" >> $GITHUB_ENV
 
       - name: Initialise helm repo
         run: |
           helm repo add sfapp_chart https://makarovs96.github.io/devops-helm/
           helm repo update
+
+      - name: Apply k8s manifests
+        working-directory: ./.helm
+        run: |
+          echo -e "$YELLOW Creating namespace [$K8S_NAMESPACE] and set it as a default $RESET"
+          kubectl create namespace $K8S_NAMESPACE --dry-run=client -oyaml | kubectl apply -f -
+          kubectl config set-context --current --namespace=$K8S_NAMESPACE
+
+          echo -e "$YELLOW Installing IRIS application $RESET"
+          helm upgrade $HELM_RELEASE_NAME --dry-run --install sfapp_chart/sfapp-helm \
+            --version $HELM_CHART_VERSION                                     \
+            --values $HELM_VALUES                                             \
+            --set dockerSecret.name=$DOCKER_SECRET_NAME                       \
+            --set dockerSecret.secret=$DOCKER_SECRET                          \
+            --set postgres.config.dbName=$PG_DB_NAME                          \
+            --set postgres.config.dbUser=$PG_USER_NAME                        \
+            --set postgres.config.dbPass=$PG_PASSWORD                         \
+            --set sfapp.deployment.image=$SFAPP_IMAGE                         \
+            --create-namespace                                                \
+            --wait                                                            \
+            --atomic
