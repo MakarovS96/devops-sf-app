@@ -30,7 +30,7 @@ jobs:
     #   run: docker build . --file Dockerfile --tag $SFAPP_IMAGE
 
     # - name: Push docker image
-    #   run: docker push cr.yandex/$YC_REG/$APP_NAME:${{github.ref_name}}
+    #   run: docker push $SFAPP_IMAGE
 
   deploy-to-k8s:
     name: Deploy to k8s
@@ -51,7 +51,7 @@ jobs:
           echo "DOCKER_SECRET=${{ secrets.DOCKER_SECRET }}" >> $GITHUB_ENV
           echo "KUBECONFIG=$(pwd)/kubeconf" >> $GITHUB_ENV
 
-      - name: check env
+      - name: Initialise helm repo
         run: |
-          echo $KUBECONFIG
-          cat $KUBECONFIG
+          helm repo add sfapp_chart https://makarovs96.github.io/devops-helm/
+          helm repo update
