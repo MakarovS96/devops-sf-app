@@ -1,0 +1,43 @@
+dockerSecret:
+  enabled: true
+  name: DOCKER_SECRET_NAME
+  secret: DOCKER_SECRET
+
+
+postgres:
+
+  config:
+    dbName: PG_DB_NAME
+    dbUser: PG_USER_NAME
+    dbPass: PG_PASSWORD
+
+  storage:
+    capacity: 5Gi
+    path: "/mnt/data"
+
+  statefulset:
+    replicas: 1
+    image: mirror.gcr.io/postgres:13-alpine
+    port: 5432
+    resources:
+      limits:
+        memory: "500Mi"
+        cpu: "500m"
+      pvclaim:
+        capacity: 5Gi
+
+
+sfapp:
+  service:
+    port: 80
+    nodeport: 30000
+
+  deployment:
+    replicas: 1
+    image: SFAPP_IMAGE
+    port: 3003
+    resources:
+      limits:
+        memory: "500Mi"
+        cpu: "500m"
+
