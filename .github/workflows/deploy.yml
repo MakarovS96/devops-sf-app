@@ -9,7 +9,7 @@ env:
   YC_CREDS: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
   YC_REG: ${{ secrets.REGISTRY_ID }}
   APP_NAME: "sfapp"
-  K8SNAMESPACE: "sfdevops"
+  K8S_NAMESPACE: "sfdevops"
 
   YELLOW: '\033[0;33m'
   RESET:  '\033[0m'
